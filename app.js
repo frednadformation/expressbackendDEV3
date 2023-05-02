@@ -15,11 +15,15 @@ app.set('view engine', 'ejs');
 
 require('dotenv').config();
 
+const bcrypt = require('bcrypt');
+
 var Form = require('./modeles/Formulaire');
 
 const Film = require('./modeles/Film');
 
 const Post = require('./modeles/Post');
+
+const User = require('./modeles/User');
 
 
 const url = process.env.DATABASE_URL;
@@ -29,9 +33,6 @@ mongoose.connect(url, {
     useUnifiedTopology: true
 }).then(console.log('MongoDB connected'))
 .catch(err => console.log(err))
-
-
-
 
 
 // app.get("/", function(req, res) {
@@ -219,6 +220,58 @@ app.put('/post/edit/:id', function (req, res){
     .catch(err=> {console.log(err)});
 
 });
+
+//----------------------------------------------------------------
+//Modèle USER :
+
+//Inscription
+app.post('/api/signup', function (req, res){
+    const Data = new User({
+        username : req.body.username,
+        email : req.body.email,
+        password : bcrypt.hashSync(req.body.password, 10),
+        admin: false
+    });
+
+    Data.save().then(() => {
+        console.log("Utilisateur sauvergardé !");
+        res.redirect('/login');
+    }).catch(err => {console.log(err)});
+
+});
+
+//Affichage formulaire inscription
+app.get('/newUser', function(req, res){
+    res.render('Signup')
+})
+//Affichage formulaire connexion
+app.get('/login', function(req, res){
+    res.render('Login')
+})
+
+app.post('/api/login', function(req, res){
+    User.findOne(
+        {
+            email : req.body.email
+        }
+    )
+    .then( user => {
+    if(!user){
+        res.status(404).send('No user found');
+    }
+    console.log(user);
+    // if(user.password != req.body.password ){
+    //     res.status(404).send('Invalid password');
+    // }
+    if(!bcrypt.compareSync(req.body.password, user.password)){
+        res.status(404).send('Invalid password');
+    }
+    res.render('Userpage', {data : user})
+    })
+    .catch(err =>console.log(err));
+});
+
+
 
 
 var server = app.listen(5000, function(){
