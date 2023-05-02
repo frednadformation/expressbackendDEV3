@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- bootstrap CDN -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+       
+    <title>Edit Post</title>
+</head>
+<body>
+    <div class="container">
+
+        <%= post  %>
+        <h1> titre du post : <%= post.titre %></h1>
+        <h3> sous-titre du post : <%= post.soustitre %></h3>
+        <p> paragraphe du post : <%= post.para %></p>
+    
+        <h1 class="text-center"> Editer le post :</h1>
+    
+        <form action="/post/edit/<%= post.id %>?_method=PUT" method="post">
+
+        <input type="hidden" name="_method" value="put">
+
+        <label for="titre">Titre</label>
+        <input type="text" id="titre" name="titre" value="<%= post.titre %>">
+        <br>
+        <label for="sousTitre">Sous-titre</label>
+        <input type="text" id="sousTitre" name="soustitre" value="<%= post.soustitre %>">
+        <br>
+        <label for="paragraphe">Paragraphe</label>
+        <input type="text" id="paragraphe" name="para" value="<%= post.para %>">
+        <br>
+    
+        <input type="submit" value="Enregistrer un nouveau post">
+    
+        </form>
+    
+    <br>
+        <form action="/post/delete/<%= post.id %>?_method=DELETE" method="post">
+    
+            <input type="hidden" name="_method" value="delete">
+            
+            <input type="submit" value="Supprimer le post !">
+        </form>
+    </div>
+
+</body>
+</html>
