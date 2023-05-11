@@ -4,6 +4,10 @@ var path = require('path');
 var app = express();
 var bodyParser = require('body-parser');
 
+var cors = require('cors');
+
+app.use(cors());
+
 const methodOverride = require('method-override');
 app.use(methodOverride('_method'))
 
@@ -70,12 +74,12 @@ app.post("/submit-contact", function(req, res) {
     }).catch(err => console.log(err));
 });
 
-app.get('/', function(req, res) {
-    Form.find().then(data => {
-        console.log(data);
-        res.render('Home', {data: data})
-    })
-});
+// app.get('/', function(req, res) {
+//     Form.find().then(data => {
+//         console.log(data);
+//         res.render('Home', {data: data})
+//     })
+// });
 
 
 app.get('/contact/:id', function(req, res) {
@@ -134,7 +138,7 @@ app.post("/submit-film", function (req, res) {
     })
     Data.save().then(() => {
         console.log("film ajouté !");
-        res.redirect('/newfilm')
+        res.redirect('http://localhost:3000/allfilm')
     }).catch(err => {console.log(err)});;
 
 });
@@ -142,14 +146,14 @@ app.post("/submit-film", function (req, res) {
 //Affiche la totalité des films dans la page Allfilm.ejs
 app.get('/allfilm', function (req, res) {
     Film.find().then((data) => {
-        res.render('Allfilm', {data: data});
+        res.json(data);
     });
 });
 
 app.get('/film/:id', function (req, res) {
     Film.findOne({
         _id: req.params.id
-    }).then((data) => {res.render('Editfilm', {data: data});})
+    }).then((data) => {res.json(data);})
     .catch((err) => {console.error(err)});
     ;
 });
@@ -184,7 +188,9 @@ app.post('/submit-post', function (req, res) {
 app.get('/allposts', function (req, res) {
 
     Post.find().then((data) => {
-        res.render('AllPosts', {data : data});
+        // res.render('AllPosts', {data : data});
+        // res.json({data: data});
+        res.json(data);
     })
 
 });
@@ -271,6 +277,14 @@ app.post('/api/login', function(req, res){
     .catch(err =>console.log(err));
 });
 
+
+app.get('/', function (req, res) {
+
+    User.find().then((data) => {
+        res.json({data : data});
+    })
+
+});
 
 
 
