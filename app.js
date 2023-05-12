@@ -313,7 +313,7 @@ app.post('/api/login', function(req, res){
 });
 
 
-app.get('/', function (req, res) {
+app.get('/', validateToken, function (req, res) {
 
     User.find().then((data) => {
         res.json({data : data});
