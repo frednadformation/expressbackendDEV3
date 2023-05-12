@@ -1,26 +1,46 @@
+//Framework express
 var express = require('express');
-
-var path = require('path');
 var app = express();
-var bodyParser = require('body-parser');
 
+var path = require('path'); //Lire les fichier html
+
+// enregistrement formulaire
+var bodyParser = require('body-parser'); 
+app.use(bodyParser.urlencoded({ extended: false }));
+
+//Mode API, pour que REACT récupere les données
 var cors = require('cors');
-
 app.use(cors());
 
+const bcrypt = require('bcrypt');//Encodage des mot de passe
+
+//Method PUT et DELETE dans le front
 const methodOverride = require('method-override');
 app.use(methodOverride('_method'))
 
-var mongoose = require('mongoose');
-
-app.use(bodyParser.urlencoded({ extended: false }));
-
+//Systeme de vue : EJS
 app.set('view engine', 'ejs');
 
+//Utilisation des cookies :
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+//Import JWT
+const {createTokens, validateToken} = require('./JWT');
+
+//BDD
 require('dotenv').config();
+var mongoose = require('mongoose');
+const url = process.env.DATABASE_URL;
 
-const bcrypt = require('bcrypt');
+mongoose.connect(url, {
+    useNewUrlParser : true,
+    useUnifiedTopology: true
+}).then(console.log('MongoDB connected'))
+.catch(err => console.log(err))
 
+
+//Appelles des modèles
 var Form = require('./modeles/Formulaire');
 
 const Film = require('./modeles/Film');
@@ -29,14 +49,6 @@ const Post = require('./modeles/Post');
 
 const User = require('./modeles/User');
 
-
-const url = process.env.DATABASE_URL;
-
-mongoose.connect(url, {
-    useNewUrlParser : true,
-    useUnifiedTopology: true
-}).then(console.log('MongoDB connected'))
-.catch(err => console.log(err))
 
 
 // app.get("/", function(req, res) {
@@ -139,7 +151,7 @@ app.post("/submit-film", function (req, res) {
     Data.save().then(() => {
         console.log("film ajouté !");
         res.redirect('http://localhost:3000/allfilm')
-    }).catch(err => {console.log(err)});;
+    }).catch(err => {console.log(err)});
 
 });
 
@@ -156,6 +168,21 @@ app.get('/film/:id', function (req, res) {
     }).then((data) => {res.json(data);})
     .catch((err) => {console.error(err)});
     ;
+});
+
+app.put('/film/edit/:id', function (req, res){
+    const Data = {
+        titre: req.body.titre,
+        genre: req.body.genre,
+        nb_ventes: req.body.nb_ventes,
+        poster: req.body.poster,
+    };
+    Film.updateOne({_id: req.params.id}, {$set : Data})
+    .then((data) =>{
+        console.log(data);
+        res.redirect('http://localhost:3000/allfilm');
+    })
+    .catch(err=> {console.log(err)});
 });
 
 app.delete('/film/delete/:id', function(req, res) {
@@ -272,6 +299,14 @@ app.post('/api/login', function(req, res){
     if(!bcrypt.compareSync(req.body.password, user.password)){
         res.status(404).send('Invalid password');
     }
+    const accessToken = createTokens(user);
+
+    res.cookie("accessToken", accessToken, {
+        maxAge: 60 * 60 * 24 * 30,// 30 jours
+        httpOnly: true
+    });
+    res.json("LOGGED IN")
+
     res.render('Userpage', {data : user})
     })
     .catch(err =>console.log(err));
