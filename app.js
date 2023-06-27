@@ -49,6 +49,59 @@ const Post = require('./modeles/Post');
 
 const User = require('./modeles/User');
 
+const Blog = require('./modeles/Blog');
+
+
+const multer = require('multer')
+app.use(express.static('uploads'))
+
+const storage = multer.diskStorage({
+    
+    destination: (req, file, cb)=>{
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb)=>{
+        cb(null, file.originalname);
+    }
+})
+const upload = multer({storage})
+
+app.post('/upload', upload.single('image'), (req, res) =>{
+    if(!req.file){
+        res.status(400).send('No File uploaded');
+    }
+    else{
+        res.send('File uploaded successfully')
+    }
+})
+
+app.post('/multipleImages', upload.array('images', 5), (req, res) =>{
+    if(!req.files || req.files.length === 0){
+        res.status(400).send('No File uploaded');
+    }
+    else{
+        res.send('File uploaded successfully')
+    }
+})
+
+app.post('/submit-blog',upload.single('image'), function(req, res) {
+    const Data = new Blog({
+        titre : req.body.titre,
+        username : req.body.username,
+        imageName: req.body.imageName
+    });
+
+    Data.save().then(() =>{
+        res.send('File and Data uploaded successfully')
+    }).catch(err => console.log(err));
+})
+
+app.get('/myblog', function (req, res) {
+    Blog.find().then((data) => {
+        res.json(data);
+    });
+});
+
 
 
 // app.get("/", function(req, res) {
@@ -215,9 +268,9 @@ app.post('/submit-post', function (req, res) {
 app.get('/allposts', function (req, res) {
 
     Post.find().then((data) => {
-        // res.render('AllPosts', {data : data});
+        res.render('AllPosts', {data : data});
         // res.json({data: data});
-        res.json(data);
+        // res.json(data);
     })
 
 });
